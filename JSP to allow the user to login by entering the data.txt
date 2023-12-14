@@ -1,0 +1,121 @@
+Develop a web application using JSP to allow the user to login by entering the
+user id and the password, when the user clicks on “Login” button, call a JSP page
+to authenticate the login, if successful take the user to “welcome.html”, otherwise
+display “Login Failed”, and allow the user to re-login. [Login(userid: varchar,
+password:varchar)]
+
+
+HTML Form (login.jsp):
+
+jsp
+Copy code
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Login Page</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form action="LoginServlet" method="post">
+        <label>User ID:</label>
+        <input type="text" name="userid" required><br>
+        <label>Password:</label>
+        <input type="password" name="password" required><br>
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>
+
+Servlet (LoginServlet.java):
+
+java
+Copy code
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@WebServlet("/LoginServlet")
+public class LoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String url = "jdbc:mysql://localhost:3306/your_database"; // Change this to your database URL
+        String user = "your_username"; // Change this to your database username
+        String password = "your_password"; // Change this to your database password
+
+        String enteredUserId = request.getParameter("userid");
+        String enteredPassword = request.getParameter("password");
+
+        try (Connection connection = DriverManager.getConnection(url, user, password)) {
+            String query = "SELECT * FROM users WHERE userid = ? AND password = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, enteredUserId);
+                preparedStatement.setString(2, enteredPassword);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        response.sendRedirect("welcome.html"); // Redirect to the welcome page on successful login
+                    } else {
+                        response.sendRedirect("login-failure.jsp"); // Redirect to a failure page on unsuccessful login
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+Replace your_username, your_password, and your_database with your actual database credentials.
+
+Database Setup:
+
+Ensure that you have a database named your_database and a table named users with columns userid and password.
+
+sql
+Copy code
+CREATE TABLE users (
+    userid VARCHAR(255) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL
+);
+Welcome Page (welcome.html):
+
+Create a simple welcome page that the user will be redirected to upon successful login.
+
+html
+Copy code
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome</title>
+</head>
+<body>
+    <h2>Welcome to the Application!</h2>
+</body>
+</html>
+Login Failure Page (login-failure.jsp):
+
+Create a JSP page to display a login failure message and allow the user to re-login.
+
+jsp
+Copy code
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Login Failure</title>
+</head>
+<body>
+    <h2>Login Failed</h2>
+    <p>Please check your user ID and password and try again.</p>
+    <a href="login.jsp">Back to Login</a>
+</body>
+</html>

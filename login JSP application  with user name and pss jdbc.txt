@@ -1,0 +1,295 @@
+. Create a registration and login JSP application to register and authenticate the
+user based on username and password using JDBC.
+
+
+AIM: CREATE A REGISTRATION AND LOGIN JSP APPLICATION TO REGISTER AND AUTHENTICATE THE USER BASED ON USERNAME AND PASSWORD USING JDBC. 
+SQL QUERY : create table
+CREATE TABLE USER (USERNAME VARCHAR (100), PASSWORD VARCHAR (100), PASSWORD1 VARCHAR (100), EMAIL VARCHAR (100), COUNTRY VARCHAR (100));
+-----------------------------------------------------------------------------
+HTML CODE : index.html
+<html>
+    <title>Registration page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <form action="registerjsp.jsp" method="Post"><fieldset>    
+            <legend>Registration page:</legend>
+            Enter Username     <br>  <input type="text" name="uname"><br>
+            Enter password     <br>  <input type ="password" name="pass"> <br>
+            Enter password     <br>  <input type ="password" name="pass1"> <br>
+            Enter Your Email   <br>  <input type="email" name="mail"> <br>
+            Enter Your Country <br>  <input type ="text" name ="country"><br>
+            <input type="submit" value="Register">
+        </fieldset>
+      </form>
+ 	</body>
+	</html>
+------------------------------------------------------------------------------
+JSP CODE: registerjsp.jsp
+
+<%@page contentType="text/html" import="java.sql.*"%>
+<html><body>
+        <h1>Registration JSP Page</h1>
+        <%
+            String uname = request.getParameter("uname");
+            String password = request.getParameter("pass");
+            String password1 = request.getParameter("pass1");
+            String email = request.getParameter("mail");
+            String country = request.getParameter("country");
+            if (password.equals(password1)) {
+                try {
+                    Class.forName("com.mysql.jdbc.Driver");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/temp", "root", "root");
+                    PreparedStatement stmt = con.prepareStatement("insert into user values (?,?,?,?)");
+                    stmt.setString(1, uname);
+                    stmt.setString(2, password);
+                    stmt.setString(3, email);
+                    stmt.setString(4, country);
+                    int row = stmt.executeUpdate();
+                    if (row == 1) {
+                        out.println("Registration Successful");
+                    } else {
+                        out.println("Registration FFFFFAAAIIILLLL !!!!");
+        %><jsp:include page="index.html" ></jsp:include>
+        <%
+                }
+            } catch (Exception e) {
+                out.println(e);
+            }
+        } else {
+            out.println("<h1>Password Mismatch</h1>");
+        %>
+        <jsp:include page="index.html" ></jsp:include>
+        <% }
+        %>
+    </body></html>
+-----------------------------------------------------------------------------
+OUTPUT:1 
+
+
+  OUTPUT:
+SELECT * FROM User;
++----------+----------+-------------------+---------+
+| Username | password | email             | country |
++----------+----------+-------------------+---------+
+| Micheal  | 1234     | micheal@gmail.com | India   |
++----------+----------+-------------------+---------+ 
+
+
+
+chatGpt
+
+
+Step 1: Set Up Database
+Create a MySQL database and a table for user information.
+
+sql
+Copy code
+CREATE DATABASE user_db;
+USE user_db;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+Step 2: Create a JavaBean for User
+java
+Copy code
+// User.java
+
+public class User {
+    private String username;
+    private String password;
+
+    // Constructors, getters, setters, etc.
+}
+Step 3: Create a JDBC Utility Class
+java
+Copy code
+// JDBCUtils.java
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class JDBCUtils {
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/user_db";
+    private static final String JDBC_USER = "your_username";
+    private static final String JDBC_PASSWORD = "your_password";
+
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+    }
+}
+Replace your_username and your_password with your actual database username and password.
+
+Step 4: Create a Registration JSP Page
+jsp
+Copy code
+<!-- registration.jsp -->
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>User Registration</title>
+</head>
+<body>
+    <h2>User Registration</h2>
+    <form action="RegisterServlet" method="post">
+        <label>Username:</label>
+        <input type="text" name="username" required><br>
+        <label>Password:</label>
+        <input type="password" name="password" required><br>
+        <input type="submit" value="Register">
+    </form>
+</body>
+</html>
+Step 5: Create a Registration Servlet
+java
+Copy code
+// RegisterServlet.java
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+@WebServlet("/RegisterServlet")
+public class RegisterServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        try (Connection connection = JDBCUtils.getConnection()) {
+            String query = "INSERT INTO users (username, password) VALUES (?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, password);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        response.sendRedirect("registration-success.jsp");
+    }
+}
+Step 6: Create a Login JSP Page
+jsp
+Copy code
+<!-- login.jsp -->
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>User Login</title>
+</head>
+<body>
+    <h2>User Login</h2>
+    <form action="LoginServlet" method="post">
+        <label>Username:</label>
+        <input type="text" name="username" required><br>
+        <label>Password:</label>
+        <input type="password" name="password" required><br>
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>
+Step 7: Create a Login Servlet
+java
+Copy code
+// LoginServlet.java
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+@WebServlet("/LoginServlet")
+public class LoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        try (Connection connection = JDBCUtils.getConnection()) {
+            String query = "SELECT * FROM users WHERE username = ? AND password = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, password);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        HttpSession session = request.getSession();
+                        session.setAttribute("username", username);
+                        response.sendRedirect("welcome.jsp");
+                    } else {
+                        response.sendRedirect("login-failure.jsp");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+Step 8: Create a Welcome JSP Page
+jsp
+Copy code
+<!-- welcome.jsp -->
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+</head>
+<body>
+    <h2>Welcome to the Application!</h2>
+</body>
+</html>
+Step 9: Create a Login Failure JSP Page
+jsp
+Copy code
+<!-- login-failure.jsp -->
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Login Failure</title>
+</head>
+<body>
+    <h2>Login failed. Please try again.</h2>
+    <a href="login.jsp">Go back to login</a>
+</body>
+</html>
+Step 10: Deploy and Run
+Deploy your application to a servlet container (e.g., Apache Tomcat) and access it in a web browser. For example, if you deploy to Tomcat, the URL might be http://localhost:8080/your-web-context/login.jsp. Replace your-web-context with the actual context of your web application.
