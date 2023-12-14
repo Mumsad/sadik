@@ -1,4 +1,5 @@
-html code:
+jsp Validate 
+index.html Code:-
 
 <html> 
 <head> 
@@ -23,8 +24,25 @@ Select Gender
 </body> 
 </html>
 
+add jsp page and name is 
 
-validate.jsp:
+success
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%> 
+<!DOCTYPE html> 
+<html> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+<title>JSP Page</title> 
+</head> 
+<body> 
+<h1>Data Validated Successfully!!</h1> 
+</body> 
+</html>
+
+
+add jsp page with name "validate"
+
 
 <%@page contentType="text/html" pageEncoding="UTF-8" 
 import="mybean.*" %> 
@@ -37,7 +55,7 @@ class="mybean.CheckerBean" >
 </jsp:useBean> 
 <%if (obj.validate()) 
 { %> 
-<jsp:forward page="successful.jsp"/> 
+<jsp:forward page="success.jsp"/> 
 <% } 
 else {%> 
 <jsp:include page="index.html"/> 
@@ -46,8 +64,10 @@ else {%>
 </body> 
 </html>
 
+now add session bean name with CheckerBean
+and add package mybean
 
-CheckerBean.java:
+CheckerBean.java Code:-
 
 package mybean;
 
@@ -122,18 +142,3 @@ public class CheckerBean {
         return res;
     }
 }
-
-
-success.jsp
-
-<%@page contentType="text/html" pageEncoding="UTF-8"%> 
-<!DOCTYPE html> 
-<html> 
-<head> 
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
-<title>JSP Page</title> 
-</head> 
-<body> 
-<h1>Data Validated Successfully!!</h1> 
-</body> 
-</html>
